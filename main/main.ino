@@ -21,11 +21,14 @@ int forwardPin2 = 13;
 int backwardsPin2 = 12;
 int pwmPin2 = 11;
 
+int redLED = 9;
+int yellowLED = 10;
+
 String RorL;
 
 void setup() {
   pinMode(powerButtonPin, INPUT);
-  
+
   pinMode(forwardPin1, OUTPUT);
   pinMode(backwardsPin1, OUTPUT);
   pinMode(pwmPin1, OUTPUT);
@@ -35,6 +38,8 @@ void setup() {
   pinMode(backwardsPin2, OUTPUT);
   pinMode(pwmPin2, OUTPUT);
 
+  pinMode(redLED, OUTPUT);
+  pinMode(yellowLED, OUTPUT);
 
   Serial.begin(9600);
 }
@@ -50,6 +55,8 @@ void loop(){
   digitalWrite(forwardPin2, LOW);
   digitalWrite(backwardsPin2, LOW);
 
+  digitalWrite(redLED, LOW);
+
   while (powerON == true){
 
     buttonOnOff();
@@ -59,7 +66,7 @@ void loop(){
     }
 
     else{
-      motorControll(70);
+      motorControll(75);
     }
   }
 
@@ -98,6 +105,9 @@ void lineDetect(int rPin, int lPin, int mPin){
   else if (middle == HIGH && left == LOW && right == LOW){
     RorL = String("IL");
   }
+  else{
+    RorL = String("OUT");
+  }
 
 }
 
@@ -117,20 +127,54 @@ void motorControll(int speed){
   if (RorL == String("R")){
     Serial.println("right");
 
-    analogWrite(pwmPin1, speed*0.75);
-    analogWrite(pwmPin2, speed*1.3);
+    digitalWrite(yellowLED, HIGH);
+    digitalWrite(redLED, LOW);
+
+    analogWrite(pwmPin1, speed*0.7);
+    analogWrite(pwmPin2, speed*1.4);
+
+    // delay(500);
+
+    // analogWrite(pwmPin1,speed);
+    // analogWrite(pwmPin2,speed);
   }
   else if (RorL == String("L")){
     Serial.println("left");
 
-    analogWrite(pwmPin1, speed*1.3);
-    analogWrite(pwmPin2, speed*0.75);
+    digitalWrite(yellowLED, HIGH);
+    digitalWrite(redLED, LOW);
+
+    analogWrite(pwmPin1, speed*1.4);
+    analogWrite(pwmPin2, speed*0.5);
+
+    // delay(500);
+
+    // analogWrite(pwmPin1, speed);
+    // analogWrite(pwmPin2, speed);
   }
   else if (RorL == String("IL")){
     Serial.println("in line");
+    digitalWrite(yellowLED, LOW);
+    digitalWrite(redLED, LOW);
 
     analogWrite(pwmPin1,speed);
     analogWrite(pwmPin2,speed);
+  }
+  else if (RorL == String("OUT")){
+    Serial.println("OUTSIDE OF BOUNDS");
+
+    digitalWrite(redLED, HIGH);
+    digitalWrite(yellowLED, LOW);
+
+    lineDetect(rightSens, leftSens, middleSens);
+
+    delay(500);
+
+    lineDetect(rightSens, leftSens, middleSens);
+    
+    if (RorL == String("OUT")){
+      powerON = false;
+    }
   }
 
 }
